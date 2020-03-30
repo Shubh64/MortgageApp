@@ -1,0 +1,7 @@
+{
+  "name": "mortgageApp",
+  "short_name": "mortgageApp",
+  "description": "for mortgage",
+  "start_url": "/",
+  "display": "standalone"
+}
