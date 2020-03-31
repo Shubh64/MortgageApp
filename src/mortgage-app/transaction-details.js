@@ -47,19 +47,22 @@ class TransactionDetails extends PolymerElement {
       <div >
       <paper-button id="back" on-click="_handleBack">Back</paper-button>
      <table>
-              <th>Name</th>
-              <th>Account No.</th>
-              <th>Amount</th>
+              <th>SavingAccountBalance</th>
+              <th>Date</th>
+              <th>TransactionId</th>
+              <th>CustomerId</th>
       <tbody>
           <template is="dom-repeat" items={{transactionDetails}}>
               <tr>
-                  <td>{{item.beneficiaryName}}</td>
-                  <td>{{item.beneficiaryAccountNumber}}</td>
-                  <td>{{item.amount}}</td>
+                  <td>{{item.emi}}</td>
+                  <td>{{item.date}}</td>
+                  <td>{{item.transactionId}}</td>
+                  <td>{{item.customerId}}</td>
               </tr>
           </template>
       </tbody>
   </table>
+  <h2 id="noTransaction"></h2>
      </div>
      <ajax-call id="ajax"></ajax-call>
      <app-location route={{route}}></app-location>
@@ -80,23 +83,25 @@ class TransactionDetails extends PolymerElement {
    */
   connectedCallback()
   {  super.connectedCallback();
-    this.$.ajax._makeAjaxCall('get',`http://localhost:3000/transactions`,null,'ajaxResponse')  
+     let {customerId} = JSON.parse(sessionStorage.getItem('userDetails'));
+     console.log(customerId)
+    this.$.ajax._makeAjaxCall('get',`http://localhost:4242/mortgage/mortgage?customerId=${customerId}`,null,'ajaxResponse')  
   }
   //populating data in dom repeat for account details
   _transactionDetails(event){  
     console.log(event.detail.data)
-    // if(event.detail.data.status==500)
-    // {
-    //   this.$.noTransaction.innerHTML=event.detail.data.message
-    // }
-    // else
-    // {
-    // this.transactionDetails=event.detail.data
-    // }
-    this.transactionDetails=event.detail.data;
+    if(event.detail.data.status==606)
+    {
+      this.$.noTransaction.innerHTML=event.detail.data.message
+    }
+    else
+    {
+    this.transactionDetails=event.detail.data
+    }
+    // this.transactionDetails=event.detail.data;
 }
 _handleBack(){
-  this.set('route.path','/user-home');
+  this.set('route.path','/home');
 }
 }
 

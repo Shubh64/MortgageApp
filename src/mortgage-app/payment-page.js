@@ -10,7 +10,9 @@ import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/gold-cc-input/gold-cc-input.js';
 import '@polymer/gold-cc-expiration-input/gold-cc-expiration-input.js';
 import '@polymer/gold-cc-cvc-input/gold-cc-cvc-input.js';
-
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
+import '@polymer/paper-listbox/paper-listbox.js';
+import '@polymer/paper-item/paper-item.js';
 /**
  * @customElement
  * @polymer
@@ -61,11 +63,20 @@ h2{
 a{
   text-decoration:none
 }
+
   </style>
+ 
   <app-location route={{route}}></app-location>
   <ajax-call id="ajax"></ajax-call>
     <div id="cardDetails">
     <h3>Enter Card Details</h3>
+    <paper-dropdown-menu id="payment" name="payment" vertical-offset="60">
+    <paper-listbox slot="dropdown-content" class="dropdown-content" selected=0>
+      <paper-item>Select Payment Type</paper-item>
+      <paper-item>normal</paper-item>
+      <paper-item>auto</paper-item>
+    </paper-listbox>
+  </paper-dropdown-menu>
             <!-- Card Number -->
             <gold-cc-input auto-validate id="card" label="Card number" error-message="Enter valid visa or mastercard!" card-types='["visa", "mastercard"]' required>
         </gold-cc-input>
@@ -77,67 +88,36 @@ a{
           </div>
     <span> <paper-button type="submit"  on-click="_handleSubmit" raised class="proceed-btn">Proceed</paper-button>
     </span> 
-  <paper-dialog id="modal">
-  <paper-dialog-scrollable>
-  <form id="donationDetails">
-  <h2>ThankYou for giving Wings to some Dreams</h2>
-  <h3>Your Donation Details are:</h3>
-  <ul>
-      <li>Donar Name:{{userName}}</li>
-      <li>Scheme Name:{{schemeName}}</li>
-      <li>Scheme Amount:{{schemeAmount}}</li>
-      <li>Email-Id:{{emailId}}</li>
-      <li>MobileNo.:{{mobileNumber}}</li>
-      <li>PAN Card No.:{{panNumber}}</li>
-      <li>TaxBenefitAmount:{{taxBenefitAmount}}</li>
-  </ul>
-  </form>
-  </paper-dialog-scrollable>
-  <paper-button raised dialog-dismiss>Cancel</paper-button>
-  <a href="http://10.117.189.176:9090/udaan/users/{{userId}}/email"><paper-button  raised >Send Email</paper-button></a>
-  <a href="http://10.117.189.176:9090/udaan/users/{{userId}}/download" download="payment details.pdf"><paper-button  raised >Download</paper-button></a>
-</paper-dialog>
+  
     `;
   }
   static get properties() {
     return {
-      schemeName:String,
-      schemeAmount:String,
-      userName:String,
-      emailId:String,
-      mobileNumber:String,
-      panNumber:String,
-      taxBenefitAmount:String,
-      statusCode:String,
-      userId:Number,
-      postObj:{
-        type:Object,
-        value:{}
-      }
+
       };
     }
     _handleSubmit(){
-      this.postObj= JSON.parse(sessionStorage.getItem('donorDetails'))
-      this.postObj.creditCardNumber=this.$.card.value;
-      console.log(this.postObj);
-      this.$.ajax._makeAjaxCall('post', `${baseUrl}/udaan/users`, this.postObj, 'ajaxResponse')
-
+      let {customerId,emi}= JSON.parse(sessionStorage.getItem('userDetails'))
+      let paymentType=this.$.payment.value;
+      let postObj={paymentType,emi}
+      this.$.ajax._makeAjaxCall('PUT', `http://localhost:4242/mortgage/payment?customerId=${customerId}`,postObj, 'ajaxResponse')
+      console.log(postObj)
     }
     ready() {
       super.ready();
       this.addEventListener('ajax-response', (e) => this._payments(e))
     }
     _payments(event){
-      console.log(event.detail.data)
-        this.schemeName=event.detail.data.schemeName;
-        this.schemeAmount=event.detail.data.schemeAmount
-        this.userName=event.detail.data.userName
-        this.emailId=event.detail.data.emailId
-        this.mobileNumber=event.detail.data.mobileNumber
-        this.panNumber=event.detail.data.panNumber
-        this.taxBenefitAmount=event.detail.data.taxBenefit
-        this.userId=event.detail.data.userId
-       this.$.modal.open();
+      console.log(event.detail.data.statusCode);
+      if(event.detail.data.statusCode==902)
+      {
+        this.message="payment Successfull";
+        this.$.toast.open();
+      }
+      else{
+        this.message="payment failed";
+        this.$.toast.open();
+      }
     }
 
   }

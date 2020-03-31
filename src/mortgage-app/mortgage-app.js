@@ -116,14 +116,18 @@ class MortgageApp extends PolymerElement {
                 <paper-icon-button class="menu-button" icon="menu" drawer-toggle hidden$="{{wideLayout}}">
                 </paper-icon-button>
                 <span class="heading-title">Mortgage App</span>
+                <template is="dom-if" if="{{isLogin}}" >
                 <paper-button raised id="logout" hidden$={{!login}} on-click="_logOut">Log Out</paper-button>
-              </app-toolbar>
+                </template>
+                </app-toolbar>
                 <!-- Nav on desktop: tabs -->
                 <nav class="tabs-bar" hidden$="{{!wideLayout}}">
-          <template is="dom-repeat" items="{{items}}">
+          <template is="dom-repeat" items="{{items}}" >
+          <template is="dom-if" if="{{isLogin}}" >
           <ul>
         <li><a href="[[rootPath]]{{item.route}}">{{item.label}}</a></li>
          </ul>
+         </template>
           </template>
          </nav>
               </app-toolbar>
@@ -152,15 +156,14 @@ class MortgageApp extends PolymerElement {
                 value: false,
                 observer: 'onLayoutChange',
               },
-              login:{
+              isLogin:{
                 type:Boolean,
-                value:true
+                value:false
               },
               items: {
                 type: Array,
                 value: function () {
-                  return [{ label: 'login', route: 'login' }, { label: 'home', route: 'home' },
-                  { label: 'payments', route: 'payments' },{ label: 'mortgage', route: 'mortgage' }, { label: 'transaction', route: 'transaction' }]
+                  return [{ label: 'Payments', route: 'payments' }, { label: 'Transaction', route: 'transaction' }]
                 }
               }
             };
@@ -181,8 +184,14 @@ class MortgageApp extends PolymerElement {
           _logOut()
           {
             sessionStorage.clear();
-            this.set('route.path','./login')
+            this.set('route.path','./login');
+            window.location.reload();
           }
+          connectedCallback() {
+            super.connectedCallback();
+            this.isLogin = sessionStorage.getItem('isLogin');
+          
+        }
            /**
           *simple observer which is triggered when page property is changed
           *@param {String} newPage value of changed page 
